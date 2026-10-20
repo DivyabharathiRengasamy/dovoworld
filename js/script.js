@@ -35,13 +35,13 @@ document.querySelectorAll('.blog-filter button').forEach(btn => {
   });
 });
 
-// ===== Contact form (static demo — wire to your backend / email service) =====
+// ===== Contact form (static demo, wire to your backend / email service) =====
 const contactForm = document.getElementById('contact-form');
 if(contactForm){
   contactForm.addEventListener('submit', (e) => {
     e.preventDefault();
     const btn = contactForm.querySelector('button[type="submit"]');
-    btn.textContent = 'SENT — WE\'LL REPLY WITHIN 24H';
+    btn.textContent = 'SENT. WE\'LL REPLY WITHIN 24H';
     btn.disabled = true;
   });
 }
@@ -58,10 +58,10 @@ if(aiFab){
 }
 
 const cannedAnswers = {
-  "services": "We run SEO, performance media (Google/Meta), content and creative, and marketing automation — all coordinated by our AI systems layer so nothing works in a silo.",
+  "services": "We run SEO, performance media (Google/Meta), content and creative, and marketing automation, all coordinated by our AI systems layer so nothing works in a silo.",
   "pricing": "Pricing is scoped to the channels and markets you need. Share your goals on the Contact page and we'll come back with a straight, no-guesswork proposal.",
   "seo tools": "Our SEO Tools suite covers site audits, rank tracking, keyword opportunity mapping and content gap analysis. Head to the SEO Tools page in the menu to see the full stack.",
-  "contact": "You can reach the team directly on WhatsApp (button below) or through the Contact Us page — we typically reply within a business day."
+  "contact": "You can reach the team directly on WhatsApp (button below) or through the Contact Us page, we typically reply within a business day."
 };
 
 function botReply(text){
@@ -82,7 +82,7 @@ function respondTo(query){
   const q = query.toLowerCase();
   const key = Object.keys(cannedAnswers).find(k => q.includes(k));
   setTimeout(() => {
-    botReply(key ? cannedAnswers[key] : "Good question — a strategist can give you a sharper answer than I can. Want me to route this to the team on WhatsApp or the Contact page?");
+    botReply(key ? cannedAnswers[key] : "Good question. A strategist can give you a sharper answer than I can. Want me to route this to the team on WhatsApp or the Contact page?");
   }, 450);
 }
 
