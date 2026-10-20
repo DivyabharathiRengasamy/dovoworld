@@ -355,3 +355,17 @@ footer{ background: var(--black); color: rgba(245,250,241,0.7); padding: 64px 0 
 @media (max-width:520px){
   .chat-panel{ width: calc(100vw - 48px); }
 }
+
+
+/* Article pages */
+.article{ max-width:760px; margin:0 auto; padding:56px 0 24px; }
+.article .post-meta{ font-family: var(--mono); font-size:12px; color: var(--graphite); opacity:0.75; margin-bottom:28px; letter-spacing:0.03em; }
+.article .lede{ font-size:19px; line-height:1.6; color: var(--ink); margin-bottom:12px; }
+.article h2{ font-size: clamp(22px,3vw,28px); margin:40px 0 12px; }
+.article p{ font-size:16.5px; line-height:1.75; color: var(--graphite); margin-top:14px; }
+.article ul{ margin:14px 0 0 20px; padding:0; }
+.article li{ font-size:16.5px; line-height:1.7; color: var(--graphite); margin-top:8px; }
+.article .back-link{ display:inline-block; margin-top:40px; font-family: var(--mono); font-size:13px; color: var(--lime-dim); }
+.related{ max-width:760px; margin:0 auto; padding:0 0 56px; }
+.related h3{ font-size:18px; margin-bottom:12px; }
+.related a{ display:block; padding:12px 0; border-top:1px solid var(--line); color: var(--ink); }
