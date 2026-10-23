@@ -104,3 +104,19 @@ function sendChat(){
   respondTo(val);
   chatInput.value = '';
 }
+
+
+// ===== GA4 events (only fire if the Google tag is present) =====
+function track(name, params){
+  if(typeof gtag === 'function'){ gtag('event', name, params || {}); }
+}
+document.addEventListener('click', (e) => {
+  const a = e.target.closest ? e.target.closest('a') : null;
+  if(!a) return;
+  const h = a.getAttribute('href') || '';
+  if(h.indexOf('wa.me') > -1){ track('whatsapp_click', {link_url: h}); }
+  else if(h.indexOf('mailto:') === 0){ track('email_click'); }
+  else if(h.indexOf('tel:') === 0){ track('phone_click'); }
+  else if(h === '/contact' && /audit/i.test(a.textContent)){ track('audit_cta_click', {page_path: location.pathname}); }
+});
+if(aiFab){ aiFab.addEventListener('click', () => track('chat_open')); }
