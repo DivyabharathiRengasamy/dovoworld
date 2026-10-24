@@ -369,3 +369,9 @@ footer{ background: var(--black); color: rgba(245,250,241,0.7); padding: 64px 0 
 .related{ max-width:760px; margin:0 auto; padding:0 0 56px; }
 .related h3{ font-size:18px; margin-bottom:12px; }
 .related a{ display:block; padding:12px 0; border-top:1px solid var(--line); color: var(--ink); }
+
+/* ===== Cookie consent bar ===== */
+.consent-bar{position:fixed;left:16px;right:16px;bottom:16px;z-index:9999;max-width:620px;margin:0 auto;display:flex;gap:16px;align-items:center;justify-content:space-between;flex-wrap:wrap;padding:14px 18px;background:#0B0F0D;color:#F0F4EE;border:1px solid rgba(182,255,60,.45);border-radius:12px;box-shadow:0 8px 30px rgba(0,0,0,.4);font-size:14px;line-height:1.45}
+.consent-bar p{margin:0;flex:1 1 260px}
+.consent-bar button{font:inherit;font-weight:600;padding:8px 16px;border-radius:8px;cursor:pointer;border:1px solid rgba(240,244,238,.35);background:transparent;color:#F0F4EE;margin-left:8px}
+.consent-bar .consent-yes{background:#B6FF3C;border-color:#B6FF3C;color:#0B0F0D}

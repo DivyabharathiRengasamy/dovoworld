@@ -140,3 +140,31 @@ document.addEventListener('click', (e) => {
   else if(h === '/contact' && /audit/i.test(a.textContent)){ track('audit_cta_click', {page_path: location.pathname}); }
 });
 if(aiFab){ aiFab.addEventListener('click', () => track('chat_open')); }
+
+// ===== Cookie consent (shown to visitors in European time zones: UK, EU, CH) =====
+(function(){
+  var KEY = 'dvw_consent';
+  var stored = null;
+  try { stored = localStorage.getItem(KEY); } catch(e){}
+  function apply(v){
+    if(typeof gtag === 'function'){ gtag('consent', 'update', {analytics_storage: v}); }
+  }
+  if(stored === 'granted' || stored === 'denied'){ apply(stored); return; }
+  var tz = '';
+  try { tz = Intl.DateTimeFormat().resolvedOptions().timeZone || ''; } catch(e){}
+  if(!/^(Europe|Atlantic\/(Reykjavik|Faroe|Madeira|Canary))/.test(tz)) return;
+  var bar = document.createElement('div');
+  bar.className = 'consent-bar';
+  bar.setAttribute('role', 'dialog');
+  bar.setAttribute('aria-label', 'Cookie consent');
+  bar.innerHTML = '<p>We use analytics cookies to understand how the site is used and improve it. Nothing is tracked unless you accept.</p>' +
+    '<div><button type="button" class="consent-no">Decline</button><button type="button" class="consent-yes">Accept</button></div>';
+  document.body.appendChild(bar);
+  function choose(v){
+    try { localStorage.setItem(KEY, v); } catch(e){}
+    apply(v);
+    bar.remove();
+  }
+  bar.querySelector('.consent-yes').addEventListener('click', function(){ choose('granted'); });
+  bar.querySelector('.consent-no').addEventListener('click', function(){ choose('denied'); });
+})();
