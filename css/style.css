@@ -254,7 +254,7 @@ section{ padding: 84px 0; }
 /* ---------------- FOOTER ---------------- */
 footer{ background: var(--black); color: rgba(245,250,241,0.7); padding: 64px 0 30px; }
 .foot-grid{ display:grid; grid-template-columns: 1.4fr 1fr 1fr 1fr; gap: 40px; }
-.foot-grid h4{ color: var(--paper); font-size:13px; font-family: var(--mono); letter-spacing:0.05em; text-transform:uppercase; margin-bottom:18px; }
+.foot-grid h3, .foot-grid h4{ color: var(--paper); font-size:13px; font-family: var(--mono); letter-spacing:0.05em; text-transform:uppercase; margin-bottom:18px; }
 .foot-grid a{ display:block; padding: 6px 0; font-size:14px; color: rgba(245,250,241,0.62); }
 .foot-grid a:hover{ color: var(--lime); }
 .foot-brand p{ font-size:14px; margin-top:16px; max-width:280px; color: rgba(245,250,241,0.55); }
@@ -374,3 +374,10 @@ footer{ background: var(--black); color: rgba(245,250,241,0.7); padding: 64px 0 
 .consent-bar p{margin:0;flex:1 1 260px}
 .consent-bar button{font:inherit;font-weight:600;padding:8px 16px;border-radius:8px;cursor:pointer;border:1px solid rgba(240,244,238,.35);background:transparent;color:#F0F4EE;margin-left:8px}
 .consent-bar .consent-yes{background:#B6FF3C;border-color:#B6FF3C;color:#0B0F0D}
+
+/* Accessibility: higher-contrast greens on light backgrounds */
+main section:not(.dark-band):not(.page-hero):not(.cta-band):not(.hero) .eyebrow{ color:#3F7A00; }
+main section:not(.dark-band):not(.page-hero):not(.cta-band):not(.hero) .eyebrow::before{ background:#3F7A00; }
+.card .tag{ color:#3F7A00; }
+.dark-band .card .tag{ color:#3F7A00; }
+.card .num{ opacity:1; color:var(--graphite); }
