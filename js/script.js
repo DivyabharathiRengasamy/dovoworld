@@ -157,7 +157,7 @@ if(aiFab){ aiFab.addEventListener('click', () => track('chat_open')); }
   bar.className = 'consent-bar';
   bar.setAttribute('role', 'dialog');
   bar.setAttribute('aria-label', 'Cookie consent');
-  bar.innerHTML = '<p>We use analytics cookies to understand how the site is used and improve it. Nothing is tracked unless you accept.</p>' +
+  bar.innerHTML = '<p>We use analytics cookies to understand how the site is used and improve it. Nothing is tracked unless you accept. <a href="/privacy" style="color:#B6FF3C">Privacy policy</a></p>' +
     '<div><button type="button" class="consent-no">Decline</button><button type="button" class="consent-yes">Accept</button></div>';
   document.body.appendChild(bar);
   function choose(v){
