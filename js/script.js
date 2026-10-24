@@ -35,14 +35,34 @@ document.querySelectorAll('.blog-filter button').forEach(btn => {
   });
 });
 
-// ===== Contact form (static demo, wire to your backend / email service) =====
+// ===== Contact form (posts to /api/contact, emailed to the team) =====
 const contactForm = document.getElementById('contact-form');
 if(contactForm){
-  contactForm.addEventListener('submit', (e) => {
+  contactForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     const btn = contactForm.querySelector('button[type="submit"]');
-    btn.textContent = 'SENT. WE\'LL REPLY WITHIN 24H';
+    const original = btn.textContent;
     btn.disabled = true;
+    btn.textContent = 'SENDING...';
+    const val = (id) => (document.getElementById(id) || {}).value || '';
+    try {
+      const res = await fetch('/api/contact', {
+        method: 'POST',
+        headers: {'content-type': 'application/json'},
+        body: JSON.stringify({
+          name: val('name'), email: val('email'), company: val('company'),
+          topic: val('topic'), message: val('message'), website: val('website')
+        })
+      });
+      const out = await res.json().catch(() => ({}));
+      if(!res.ok || !out.ok) throw new Error(out.error || 'failed');
+      btn.textContent = 'SENT. WE\'LL REPLY WITHIN 24H';
+      if(typeof gtag === 'function'){ gtag('event', 'generate_lead', {form: 'contact', topic: val('topic')}); }
+    } catch(err){
+      btn.disabled = false;
+      btn.textContent = original;
+      alert('Sorry, that did not send. Please email hello@dovoworld.com or message us on WhatsApp.');
+    }
   });
 }
 

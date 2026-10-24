@@ -1,0 +1,13 @@
+{
+  "name": "dovoworld",
+  "main": "src/worker.js",
+  "compatibility_date": "2026-10-19",
+  "assets": {
+    "directory": "./",
+    "binding": "ASSETS",
+    "run_worker_first": ["/api/*"]
+  },
+  "send_email": [
+    { "name": "EMAIL", "destination_address": "divyabharathi.renga@gmail.com" }
+  ]
+}
