@@ -4,59 +4,52 @@
   if (!root) return;
 
   var TEMPLATES = {
-    leads: {
-      label: 'Lead capture',
-      goal: 'Every enquiry lands in one place and the right person hears about it straight away.',
+    crawler: {
+      label: 'Title and description fixer',
+      goal: 'Crawl the site, find weak titles and descriptions, rewrite them and publish the approved ones.',
       steps: [
-        { kind: 'trigger', title: 'Form submitted', tool: 'Website form or chat', log: 'New enquiry received from the website form (sample: "Priya S., needs SEO help").' },
-        { kind: 'action', title: 'Validate and de-duplicate', tool: 'Checks email, drops repeats', log: 'Email format is valid. No earlier enquiry from this address.' },
-        { kind: 'action', title: 'Save to CRM or sheet', tool: 'Google Sheets or your CRM', log: 'Row added to the Leads sheet with source and timestamp.' },
-        { kind: 'action', title: 'Alert the owner', tool: 'WhatsApp and email', log: 'Alert sent to the owner by WhatsApp and email.' },
-        { kind: 'action', title: 'Send auto-reply', tool: 'Email to the lead', log: 'Friendly confirmation email sent to the lead.' }
+        { kind: 'trigger', title: 'Site connected', tool: 'Your site URL', log: 'Crawl started for a sample site (example-store.com).' },
+        { kind: 'action', title: 'Crawl every page', tool: 'Crawler', log: '128 pages crawled. Title, meta description and H1 extracted for each.' },
+        { kind: 'action', title: 'Flag problems', tool: 'Length, duplicates, missing', log: '14 titles too long, 9 duplicates, 22 descriptions missing.' },
+        { kind: 'ai', title: 'Write new versions', tool: 'Claude, your brand voice', log: 'New titles and descriptions written around each page\'s keyword.' },
+        { kind: 'action', title: 'Your approval', tool: 'Approve, edit or reject', log: '36 changes approved, 2 edited, 1 rejected (sample).' },
+        { kind: 'action', title: 'Publish live', tool: 'Your CMS or repository', log: 'Approved changes published to the live site and logged.' }
       ]
     },
-    audit: {
-      label: 'SEO audit report',
-      goal: 'Enter a site address and receive a prioritised list of fixes by email.',
+    blog: {
+      label: 'Keyword to blog post',
+      goal: 'Turn a keyword into a researched, linked and reviewed blog post on your site.',
       steps: [
-        { kind: 'trigger', title: 'Site URL entered', tool: 'Form or sheet', log: 'Audit requested for a sample site (example.com).' },
-        { kind: 'action', title: 'Crawl the site', tool: 'Crawler', log: 'Crawled 120 sample pages. Found broken links, duplicate titles, slow pages.' },
-        { kind: 'ai', title: 'Group issues by impact', tool: 'Claude', log: 'Issues grouped into high, medium and low impact with a plain-language reason for each.' },
-        { kind: 'action', title: 'Build the report', tool: 'Document template', log: 'Report drafted with top 10 fixes first.' },
-        { kind: 'action', title: 'Email the report', tool: 'Email', log: 'Report emailed to the requester for review.' }
+        { kind: 'trigger', title: 'Keyword added', tool: 'Keyword list or sheet', log: 'New keyword: "trail running shoes for beginners".' },
+        { kind: 'action', title: 'Research the search', tool: 'Search results, questions', log: 'Search intent and 7 common questions collected.' },
+        { kind: 'ai', title: 'Brief and draft', tool: 'Claude, your tone', log: 'Outline approved, full draft written in your brand voice.' },
+        { kind: 'action', title: 'Links, meta, schema', tool: 'Internal links, FAQ schema', log: '5 internal links, title, description and FAQ schema added.' },
+        { kind: 'action', title: 'Your review', tool: 'Edit inline or approve', log: 'Post reviewed and approved (sample).' },
+        { kind: 'action', title: 'Publish', tool: 'Scheduled', log: 'Post scheduled for Tuesday at 9:00.' }
       ]
     },
-    brief: {
-      label: 'Content brief',
-      goal: 'Turn a keyword into a writer-ready brief and save it where the team works.',
+    landing: {
+      label: 'Landing pages',
+      goal: 'Build a unique landing page for each service, product or location you want to rank for.',
       steps: [
-        { kind: 'trigger', title: 'Keyword added', tool: 'Google Sheets row', log: 'New keyword added to the content sheet (sample: "ecommerce seo checklist").' },
-        { kind: 'action', title: 'Fetch search results', tool: 'Search data', log: 'Top results and related questions collected for the keyword.' },
-        { kind: 'ai', title: 'Draft the brief', tool: 'Claude', log: 'Brief drafted: search intent, headings, questions to answer, internal link ideas.' },
-        { kind: 'action', title: 'Save to Drive', tool: 'Google Drive', log: 'Brief saved to the shared content folder.' },
-        { kind: 'action', title: 'Notify the writer', tool: 'Email or chat', log: 'Writer notified with a link to the brief.' }
+        { kind: 'trigger', title: 'List of pages', tool: 'Services, products or cities', log: '6 pages requested: ecommerce SEO in London, Dubai, Sydney and 3 platform pages.' },
+        { kind: 'action', title: 'Research each search', tool: 'Local and topic intent', log: 'What people search for in each market collected.' },
+        { kind: 'ai', title: 'Write unique copy', tool: 'Claude', log: '6 drafts written. Unique-copy check passed on all of them.' },
+        { kind: 'action', title: 'Add FAQs and schema', tool: 'FAQ, breadcrumb, service', log: 'FAQs, schema and internal links added to each page.' },
+        { kind: 'action', title: 'Build in your design', tool: 'Your site template', log: 'Pages built with your site header, footer and styles.' },
+        { kind: 'action', title: 'Publish', tool: 'After your approval', log: 'Approved pages published and added to the sitemap.' }
       ]
     },
-    ads: {
-      label: 'Ad alerts',
-      goal: 'Catch campaigns that drift while there is still time to act.',
+    linking: {
+      label: 'Internal linking',
+      goal: 'Map every inbound and outbound internal link, find orphan pages and add the missing links.',
       steps: [
-        { kind: 'trigger', title: 'Every morning, 8:00', tool: 'Schedule', log: 'Daily check started.' },
-        { kind: 'action', title: 'Read ad spend', tool: 'Google and Meta ads', log: 'Spend and cost per result read for 6 sample campaigns.' },
-        { kind: 'action', title: 'Compare to thresholds', tool: 'Rules you agree with us', log: 'One sample campaign is above its agreed cost per result.' },
-        { kind: 'ai', title: 'Explain the drift', tool: 'Claude', log: 'Short note written: what changed, likely cause, suggested next step.' },
-        { kind: 'action', title: 'Send the alert', tool: 'Email or chat', log: 'Alert sent to the media owner with the note attached.' }
-      ]
-    },
-    report: {
-      label: 'Weekly report',
-      goal: 'Stop spending Monday morning copying numbers between dashboards.',
-      steps: [
-        { kind: 'trigger', title: 'Every Monday, 8:00', tool: 'Schedule', log: 'Weekly report run started.' },
-        { kind: 'action', title: 'Pull the numbers', tool: 'Analytics, ads, CRM', log: 'Last 7 days collected from analytics, ads and CRM (sample data).' },
-        { kind: 'ai', title: 'Write the summary', tool: 'Claude', log: 'Plain-language summary written: what changed and what to do next.' },
-        { kind: 'action', title: 'Build the document', tool: 'Doc template', log: 'Report document created with charts and the summary.' },
-        { kind: 'action', title: 'Email the client', tool: 'Email', log: 'Report emailed to the client contact.' }
+        { kind: 'trigger', title: 'Weekly check', tool: 'Schedule', log: 'Internal link check started.' },
+        { kind: 'action', title: 'Map all links', tool: 'Inbound and outbound', log: '128 pages mapped: 1,940 internal links found.' },
+        { kind: 'action', title: 'Find gaps', tool: 'Orphans, weak pages', log: '3 orphan pages and 11 pages with fewer than 3 inbound links.' },
+        { kind: 'ai', title: 'Suggest links', tool: 'Claude, natural anchors', log: '24 link suggestions with anchor text from related pages.' },
+        { kind: 'action', title: 'Your approval', tool: 'Approve or skip', log: '21 links approved (sample).' },
+        { kind: 'action', title: 'Add links live', tool: 'Your CMS or repository', log: 'Approved links added to the live pages and logged.' }
       ]
     }
   };
@@ -81,7 +74,7 @@
   var addBtns = root.querySelectorAll('.chips button');
   var ctaLink = root.querySelector('[data-cta]');
 
-  var current = 'leads';
+  var current = 'crawler';
   var steps = [];
   var running = false;
   var timers = [];
@@ -243,5 +236,5 @@
   wrap.addEventListener('scroll', function () { /* wires are inside the scrolling content, no redraw needed */ });
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(drawWires);
 
-  load('leads');
+  load('crawler');
 })();
