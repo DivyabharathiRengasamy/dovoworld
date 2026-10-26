@@ -231,37 +231,45 @@ gtag('config', 'G-6JTMQ2MVTC');
       </div>
     </div>
 
-    <div class="lx-window" aria-label="Example of the DoVoWorld dashboard">
-      <div class="lx-bar"><i></i><i></i><i></i><span class="url">dovoworld · example-store.com</span></div>
-      <div class="lx-tabs" role="tablist">
-        <button role="tab" aria-selected="true" aria-controls="hp1" id="ht1">Titles &amp; descriptions</button>
-        <button role="tab" aria-selected="false" aria-controls="hp2" id="ht2">Internal links</button>
+    <div>
+      <div class="ss" data-sitescan aria-label="Live demo: DoVoWorld crawling a sample website">
+        <div class="ss-stage">
+          <div class="ss-view">
+            <svg class="ss-map" viewBox="0 0 400 400" role="img" aria-label="Map of a sample website: home page, four sections and their pages"></svg>
+            <div class="ss-beam" hidden><span>CRAWLING</span></div>
+          </div>
+          <aside class="ss-results" aria-label="Sample results">
+            <div class="ss-tabs" role="tablist" aria-label="Results">
+              <button type="button" role="tab" id="ss-tab-fixes" data-tab="fixes" aria-controls="ss-panel-fixes" aria-selected="true" disabled><span class="ss-tab-name">Fixes</span><span class="ss-count ss-count-fixes" hidden></span></button>
+              <button type="button" role="tab" id="ss-tab-issues" data-tab="issues" aria-controls="ss-panel-issues" aria-selected="false" tabindex="-1" disabled>Issues<span class="ss-count amber ss-count-issues" hidden></span></button>
+            </div>
+            <div id="ss-panel-fixes" role="tabpanel" aria-labelledby="ss-tab-fixes">
+              <div class="ss-empty ss-empty-fixes">Results appear as the site is crawled</div>
+              <div class="ss-rows" hidden></div>
+            </div>
+            <div id="ss-panel-issues" role="tabpanel" aria-labelledby="ss-tab-issues" hidden>
+              <div class="ss-empty ss-empty-issues">Issues appear after the crawl</div>
+              <ol class="ss-issues" hidden></ol>
+            </div>
+          </aside>
+        </div>
+        <div class="ss-prompt">
+          <div class="ss-in">
+            <span class="ss-spark" aria-hidden="true">✦</span>
+            <div class="ss-input" role="textbox" aria-readonly="true" aria-label="Example request"><span class="ss-text">Crawl example-store.com and fix weak titles and descriptions.</span><span class="ss-caret" aria-hidden="true"></span></div>
+            <button type="button" class="ss-go" aria-label="Run" disabled>
+              <svg class="ss-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V5m-6 6 6-6 6 6"/></svg>
+              <svg class="ss-spin" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4a8 8 0 0 1 8 8"/></svg>
+            </button>
+          </div>
+          <label class="ss-check"><input type="checkbox" checked disabled> Ask for my approval before anything goes live</label>
+        </div>
+        <span class="ss-status ss-sr" role="status" aria-live="polite"></span>
       </div>
-      <div class="lx-panel" role="tabpanel" id="hp1" aria-labelledby="ht1">
-        <div class="lx-row">
-          <div><div class="path">/collections/running-shoes</div><div class="old">Running Shoes | Shop | Example Store Online Official Website Home</div><div class="new">Running Shoes for Road and Trail | Example Store</div></div>
-          <div><span class="lx-badge ok">Published</span></div>
-        </div>
-        <div class="lx-row">
-          <div><div class="path">/blog/how-to-choose-trainers</div><div class="old">Blog post</div><div class="new">How to Choose Trainers: Fit, Cushioning and Grip</div></div>
-          <div><span class="lx-badge amber">Awaiting approval</span></div>
-        </div>
-        <div class="lx-row">
-          <div><div class="path">/pages/returns</div><div class="old">(missing description)</div><div class="new">Free 30-day returns on all shoes. Start a return in two minutes.</div></div>
-          <div><span class="lx-badge amber">Awaiting approval</span></div>
-        </div>
-        <div class="lx-mini"><span>Sample site. 128 pages crawled</span><span>14 titles and 22 descriptions to fix</span></div>
-      </div>
-      <div class="lx-panel" role="tabpanel" id="hp2" aria-labelledby="ht2" hidden>
-        <table class="lx-table">
-          <thead><tr><th>Page</th><th class="n">In</th><th class="n">Out</th><th>Status</th></tr></thead>
-          <tbody>
-            <tr><td>/collections/running-shoes</td><td class="n">18</td><td class="n">9</td><td><span class="lx-badge ok">Healthy</span></td></tr>
-            <tr><td>/blog/trail-shoe-guide</td><td class="n">0</td><td class="n">4</td><td><span class="lx-badge red">Orphan</span></td></tr>
-            <tr><td>/pages/size-guide</td><td class="n">2</td><td class="n">1</td><td><span class="lx-badge amber">Few links</span></td></tr>
-          </tbody>
-        </table>
-        <div class="lx-suggest">Suggested: link <b>/collections/running-shoes</b> to <b>/blog/trail-shoe-guide</b> with the anchor “trail shoe guide”.</div>
+      <div class="ss-stats">
+        <div><b>4</b><span>SEO jobs automated</span></div>
+        <div><b>You</b><span>approve every change</span></div>
+        <div><b>Live</b><span>on your own site</span></div>
       </div>
     </div>
   </div>
@@ -478,10 +486,6 @@ gtag('config', 'G-6JTMQ2MVTC');
 
 <script>
 (function(){
-  var tabs=document.querySelectorAll('.lx-hero [role=tab]');
-  tabs.forEach(function(t){ t.addEventListener('click',function(){
-    tabs.forEach(function(x){ x.setAttribute('aria-selected', x===t?'true':'false'); document.getElementById(x.getAttribute('aria-controls')).hidden = x!==t; });
-  });});
   var ids=['pages','min','posts','hrs'], v={};
   function calc(){
     ids.forEach(function(k){ v[k]=+document.getElementById('c-'+k).value; document.getElementById('o-'+k).textContent=v[k]; });
@@ -561,6 +565,7 @@ gtag('config', 'G-6JTMQ2MVTC');
   </a>
 </div>
 
+<script src="js/sitescan.js" defer></script>
 <script src="js/script.js"></script>
 </body>
 </html>

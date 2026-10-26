@@ -233,3 +233,67 @@ body.theme-light{
 .theme-light .log{ min-height:0; }
 .theme-light .log ol{ max-height:220px; }
 .theme-light .canvas-wrap{ min-height:0; }
+
+/* ---------- Hero site-scan demo ---------- */
+.ss{ background:#fff; border:1px solid var(--lx-line); border-radius:18px; box-shadow:var(--lx-shadow); padding:14px; }
+.ss-stage{ display:grid; grid-template-columns:1fr 212px; gap:12px; }
+@media (max-width:560px){ .ss-stage{ grid-template-columns:1fr; } }
+.ss-view{ position:relative; border:1px solid var(--lx-line); border-radius:12px; overflow:hidden;
+  background-color:#FBFCFA; background-image:linear-gradient(#EEF1EB 1px, transparent 1px), linear-gradient(90deg, #EEF1EB 1px, transparent 1px); background-size:20px 20px; }
+.ss-map{ display:block; width:100%; height:auto; aspect-ratio:1/1; }
+.ss-lines path{ fill:none; stroke:#CBD3C4; stroke-width:1.4; }
+.ss-tile rect:first-child{ fill:#fff; stroke:#D5DCCF; stroke-width:1.2; transition:stroke .3s, fill .3s; }
+.ss-tile .ss-ln{ fill:#E3E8DE; } .ss-tile .ss-ln2{ fill:#EEF1EB; }
+.ss-tile .ss-lbl{ font:600 9.5px var(--body); fill:#5A635C; }
+.ss-home rect:first-child{ stroke:#10140F; }
+.ss-tile.seen rect:first-child{ stroke:#9CCB5A; }
+.ss-tile.fresh rect:first-child{ fill:#F3FFE3; stroke:#5C9E00; stroke-width:2; }
+.ss-dot{ animation:ssPop .35s ease both; transform-box:fill-box; transform-origin:center; }
+.ss-link{ fill:none; stroke:#5C9E00; stroke-width:1.8; stroke-dasharray:4 4; animation:ssDash 1s linear infinite; }
+.ss-flag path{ fill:#FFE8A3; stroke:#B7791F; stroke-width:1.4; stroke-linejoin:round; }
+.ss-flag text{ font:700 10px var(--body); fill:#7A4B00; }
+.ss-flag{ animation:ssPop .4s ease both; transform-box:fill-box; transform-origin:center bottom; }
+@keyframes ssPop{ from{ transform:scale(0); opacity:0; } to{ transform:scale(1); opacity:1; } }
+@keyframes ssDash{ to{ stroke-dashoffset:-16; } }
+.ss-beam{ position:absolute; left:0; right:0; top:0; height:46px; transform:translateY(-50%); pointer-events:none;
+  background:linear-gradient(180deg, transparent, rgba(182,255,60,.28) 50%, transparent); border-bottom:2px solid #8FDB1F; }
+.ss-beam span{ position:absolute; right:8px; bottom:4px; font:600 9.5px var(--mono); letter-spacing:.12em; color:#3A7300; background:#fff; padding:1px 6px; border-radius:4px; border:1px solid #CDEBA6; }
+.ss-results{ border:1px solid var(--lx-line); border-radius:12px; display:flex; flex-direction:column; min-height:0; overflow:hidden; }
+.ss-tabs{ display:flex; gap:4px; padding:8px; border-bottom:1px solid var(--lx-line); background:#FBFCFA; }
+.ss-tabs button{ flex:1; display:inline-flex; align-items:center; justify-content:center; gap:6px; font-size:12.5px; font-weight:600; padding:7px 6px; border-radius:8px; border:1px solid transparent; background:none; color:var(--lx-muted); }
+.ss-tabs button[aria-selected="true"]{ background:#fff; border-color:var(--lx-line); color:var(--lx-ink); box-shadow:0 1px 2px rgba(16,20,15,.06); }
+.ss-tabs button:disabled{ opacity:.55; cursor:default; }
+.ss-count{ font-size:11px; font-weight:700; padding:1px 7px; border-radius:999px; background:var(--lx-ok-bg); color:var(--lx-ok); }
+.ss-count.amber{ background:var(--lx-amber-bg); color:var(--lx-amber); }
+.ss-empty{ padding:28px 14px; text-align:center; color:var(--lx-muted); font-size:12.5px; }
+.ss-rows{ padding:4px 0; }
+.ss-row{ display:grid; grid-template-columns:10px 1fr auto; gap:9px; align-items:center; padding:10px 12px; border-bottom:1px solid #F0F2EE; font-size:12.5px; animation:ssIn .3s ease both; }
+.ss-sw{ width:9px; height:9px; border-radius:50%; }
+.ss-num{ font:600 13px var(--mono); }
+.ss-issues{ list-style:none; margin:0; padding:6px 0; }
+.ss-issues li{ display:grid; grid-template-columns:20px 1fr; gap:8px; padding:9px 12px; font-size:12.5px; border-bottom:1px solid #F0F2EE; animation:ssIn .3s ease both; }
+.ss-issues b{ width:20px; height:20px; border-radius:6px; background:#FFE8A3; color:#7A4B00; font-size:11px; display:flex; align-items:center; justify-content:center; }
+@keyframes ssIn{ from{ opacity:0; transform:translateY(4px); } to{ opacity:1; transform:none; } }
+.ss-prompt{ margin-top:12px; border:1px solid var(--lx-line); border-radius:12px; padding:10px 10px 10px 12px; background:#FBFCFA; }
+.ss-in{ display:flex; align-items:center; gap:10px; }
+.ss-spark{ color:#5C9E00; font-size:16px; }
+.ss-input{ flex:1; min-height:44px; display:flex; align-items:center; background:#fff; border:1px solid var(--lx-line); border-radius:10px; padding:8px 12px; font:500 13.5px var(--mono); color:var(--lx-ink); }
+.ss-caret{ display:inline-block; width:1.5px; height:16px; background:var(--lx-ink); margin-left:2px; opacity:0; }
+.ss.typing .ss-caret{ opacity:1; animation:ssBlink 1s steps(1) infinite; }
+@keyframes ssBlink{ 50%{ opacity:0; } }
+.ss-go{ width:44px; height:44px; flex:0 0 44px; border-radius:10px; border:0; background:var(--lx-ink); color:#fff; display:flex; align-items:center; justify-content:center; }
+.ss-go:disabled{ cursor:default; }
+.ss-go svg{ width:20px; height:20px; fill:none; stroke:currentColor; stroke-width:2.2; stroke-linecap:round; stroke-linejoin:round; }
+.ss-go .ss-spin{ display:none; animation:ssRot .8s linear infinite; }
+.ss-go.busy{ background:#5C9E00; }
+.ss-go.busy .ss-arrow{ display:none; } .ss-go.busy .ss-spin{ display:block; }
+@keyframes ssRot{ to{ transform:rotate(360deg); } }
+.ss-check{ display:flex; align-items:center; gap:8px; margin-top:9px; font-size:12.5px; color:var(--lx-muted); }
+.ss-check input{ accent-color:#5C9E00; }
+.ss-sr{ position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; }
+.ss-stats{ display:grid; grid-template-columns:repeat(3,1fr); margin-top:14px; border-top:1px solid var(--lx-line); }
+.ss-stats div{ padding:12px 10px 0; }
+.ss-stats div + div{ border-left:1px solid var(--lx-line); }
+.ss-stats b{ display:block; font-family:var(--display); font-size:22px; }
+.ss-stats span{ font:500 10.5px var(--mono); letter-spacing:.06em; text-transform:uppercase; color:var(--lx-muted); }
+@media (prefers-reduced-motion: reduce){ .ss-link, .ss-dot, .ss-flag, .ss-row, .ss-issues li{ animation:none; } }
