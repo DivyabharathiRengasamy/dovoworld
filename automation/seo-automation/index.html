@@ -263,7 +263,7 @@ gtag('config', 'G-6JTMQ2MVTC');
     <div class="lx-head">
       <span class="lx-kicker">What we do</span>
       <h2>Four jobs DoVoWorld does <em>for your website</em>.</h2>
-      <p>Each one starts with your real pages and ends with a change on your live site that you have approved.</p>
+      <p>Each one starts with your real pages and ends with a change on your live site that you have approved. On-page work covers more than titles and meta: full blog post bodies, landing page copy and structure, and FAQs all get the same treatment — see the live demo below.</p>
     </div>
 
     <div class="lx-feature">
@@ -384,6 +384,35 @@ gtag('config', 'G-6JTMQ2MVTC');
           </tbody>
         </table>
         <div class="lx-suggest">Add 3 links to <b>/ecommerce-seo-checklist</b> from related posts. Anchor ideas: “ecommerce SEO checklist”, “fixes before ad spend”.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="blog-demo">
+  <div class="wrap">
+    <div class="lx-head">
+      <span class="lx-kicker">Live demo</span>
+      <h2>Give us a topic. Get a <em>real</em> blog post.</h2>
+      <p>This is the actual writing engine behind job 02 above, not a mockup. Type a topic or keyword and watch roughly 1,500 words get drafted live, with proper headings, sections and an FAQ.</p>
+    </div>
+    <div class="lx-blogdemo">
+      <form id="bd-form">
+        <label for="bd-topic">Topic or keyword
+          <input type="text" id="bd-topic" maxlength="160" placeholder="e.g. best running shoes for flat feet" required>
+        </label>
+        <label for="bd-angle">Specific angle or audience (optional)
+          <input type="text" id="bd-angle" maxlength="220" placeholder="e.g. for new runners training for a 5k">
+        </label>
+        <input type="text" id="bd-website" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true">
+        <button type="submit" id="bd-submit">Generate the post</button>
+        <div id="bd-err" class="lx-blogdemo-err" role="alert" hidden></div>
+        <div class="lx-mini" style="border:0; padding:0;">Live demo · real AI output · nothing here is published anywhere</div>
+      </form>
+      <div class="lx-blogdemo-out" id="bd-out" hidden>
+        <div class="lx-bar"><i></i><i></i><i></i><span class="url" id="bd-status">Writing…</span></div>
+        <div class="lx-blogdemo-body" id="bd-body"></div>
+        <div class="lx-blogdemo-meta">On your site, this draft would wait here for your review and edits before anything publishes.</div>
       </div>
     </div>
   </div>
@@ -567,6 +596,7 @@ gtag('config', 'G-6JTMQ2MVTC');
 </div>
 
 <script src="/js/sitescan.js" defer></script>
+<script src="/js/blogdemo.js" defer></script>
 <script src="/js/script.js"></script>
 </body>
 </html>

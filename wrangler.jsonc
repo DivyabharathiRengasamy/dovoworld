@@ -9,5 +9,9 @@
   },
   "send_email": [
     { "name": "EMAIL", "destination_address": "divyabharathi.renga@gmail.com" }
+  ],
+  "ai": { "binding": "AI" },
+  "ratelimits": [
+    { "name": "BLOG_DEMO_LIMITER", "namespace_id": "1001", "simple": { "limit": 10, "period": 60 } }
   ]
 }
