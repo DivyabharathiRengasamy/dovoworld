@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="robots" content="noindex, follow">
+<link rel="canonical" href="https://www.dovoworld.com/automation/civil-engineering-quantity-takeoff/app/">
+<meta name="description" content="Open a CAD PDF drawing to count symbols and measure lengths and areas from the drawing scale. Runs in your browser.">
+<link rel="icon" href="/assets/falcon-mark.svg" type="image/svg+xml">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}[hidden]{display:none!important}</style>
+<title>Drawing Takeoff | DoVoWorld</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&family=Red+Hat+Mono:wght@400;500;600&display=swap">
+<style>
+/* Layout: a working takeoff tool. Toolbar on top, results panel left, the drawing sheet right (stacked on phones). */
+:root{
+  --bg:#F5F6F4; --surface:#FFFFFF; --ink:#16191D; --muted:#5E6670; --line:#DFE3E6; --soft:#EEF1F3;
+  --accent:#1D5FD1; --accent-soft:#E7EFFC; --ok:#1E7A3C; --ok-bg:#E5F4EA; --warn:#8A5A00; --warn-bg:#FFF3D6; --bad:#B42318; --bad-bg:#FDECEA;
+  --sheet:#FFFFFF;
+  --sans:'Public Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --mono:'Red Hat Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
+  --r:10px;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#111417; --surface:#181C20; --ink:#E9ECEF; --muted:#9AA3AD; --line:#2A3036; --soft:#20262B;
+  --accent:#6EA2FF; --accent-soft:#1B2A44; --ok:#5FD08A; --ok-bg:#16301F; --warn:#F2C35B; --warn-bg:#352A10; --bad:#FF8A7A; --bad-bg:#3A1A17;
+  color-scheme:dark; } }
+:root[data-theme="dark"]{
+  --bg:#111417; --surface:#181C20; --ink:#E9ECEF; --muted:#9AA3AD; --line:#2A3036; --soft:#20262B;
+  --accent:#6EA2FF; --accent-soft:#1B2A44; --ok:#5FD08A; --ok-bg:#16301F; --warn:#F2C35B; --warn-bg:#352A10; --bad:#FF8A7A; --bad-bg:#3A1A17;
+  color-scheme:dark; }
+*{ box-sizing:border-box; }
+html,body{ height:100%; }
+body{ background:var(--bg); color:var(--ink); font-family:var(--sans); font-size:14px; line-height:1.45; }
+button,input,select{ font:inherit; color:inherit; }
+:focus-visible{ outline:2px solid var(--accent); outline-offset:2px; }
+
+.app{ display:flex; flex-direction:column; height:100%; padding-left:max(16px, env(safe-area-inset-left,0px)); padding-right:max(16px, env(safe-area-inset-right,0px)); padding-block:14px; gap:12px; }
+.bar{ display:flex; flex-wrap:wrap; align-items:center; gap:10px 14px; }
+.brand{ display:flex; align-items:baseline; gap:10px; margin-right:auto; min-width:0; }
+.brand h1{ font-size:18px; font-weight:700; letter-spacing:-0.01em; margin:0; white-space:nowrap; }
+.brand span{ font-size:12.5px; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.ctl{ display:flex; align-items:center; gap:6px; font-size:13px; color:var(--muted); }
+.btn{ display:inline-flex; align-items:center; gap:6px; height:34px; padding:0 12px; border-radius:8px; border:1px solid var(--line); background:var(--surface); cursor:pointer; font-size:13px; font-weight:600; white-space:nowrap; }
+.btn:hover{ border-color:var(--muted); }
+.btn.primary{ background:var(--accent); border-color:var(--accent); color:#fff; }
+.btn.primary:hover{ filter:brightness(1.07); }
+.btn[disabled]{ opacity:.5; cursor:default; }
+.seg{ display:inline-flex; border:1px solid var(--line); border-radius:8px; overflow:hidden; background:var(--surface); }
+.seg button{ height:32px; padding:0 11px; border:0; background:none; cursor:pointer; font-size:12.5px; font-weight:600; color:var(--muted); }
+.seg button[aria-pressed="true"]{ background:var(--accent-soft); color:var(--accent); }
+.scale input{ width:70px; height:32px; border:1px solid var(--line); border-radius:8px; background:var(--surface); padding:0 8px; font-family:var(--mono); }
+.scale small{ font-size:11.5px; }
+select{ height:32px; border:1px solid var(--line); border-radius:8px; background:var(--surface); padding:0 6px; }
+
+.main{ flex:1; min-height:0; display:grid; grid-template-columns:330px minmax(0,1fr); gap:12px; }
+@media (max-width:860px){ .main{ grid-template-columns:1fr; grid-template-rows:auto auto; } .app{ height:auto; } body,html{ height:auto; } }
+
+.panel{ background:var(--surface); border:1px solid var(--line); border-radius:var(--r); display:flex; flex-direction:column; min-height:0; min-width:0; }
+@media (max-width:860px){ .panel{ order:2; max-height:none; } }
+.tabs{ display:flex; gap:4px; padding:8px; border-bottom:1px solid var(--line); }
+.tabs button{ flex:1; height:34px; border-radius:7px; border:1px solid transparent; background:none; cursor:pointer; font-weight:600; font-size:13px; color:var(--muted); display:inline-flex; align-items:center; justify-content:center; gap:7px; }
+.tabs button[aria-selected="true"]{ background:var(--accent-soft); color:var(--accent); }
+.pill{ font-family:var(--mono); font-size:11px; font-weight:600; padding:1px 7px; border-radius:999px; background:var(--soft); color:var(--muted); }
+.tabs [aria-selected="true"] .pill{ background:var(--surface); color:var(--accent); }
+.pill.warn{ background:var(--warn-bg); color:var(--warn); }
+.scroll{ overflow:auto; flex:1; min-height:0; }
+.sec{ padding:12px 14px 4px; font-size:11px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); display:flex; justify-content:space-between; }
+.row{ width:100%; display:grid; grid-template-columns:12px minmax(0,1fr) auto; gap:10px; align-items:center; padding:10px 14px; border:0; border-top:1px solid var(--soft); background:none; text-align:left; cursor:pointer; }
+.row:hover{ background:var(--soft); }
+.row[aria-pressed="true"]{ background:var(--accent-soft); }
+.sw{ width:11px; height:11px; border-radius:50%; }
+.sw.line{ height:4px; border-radius:2px; }
+.sw.area{ border-radius:3px; }
+.nm{ font-weight:600; font-size:13.5px; overflow-wrap:anywhere; }
+.nm small{ display:block; font-weight:500; font-size:11.5px; color:var(--muted); margin-top:1px; }
+.nm small.bad{ color:var(--bad); }
+.q{ font-family:var(--mono); font-variant-numeric:tabular-nums; font-weight:600; font-size:13.5px; text-align:right; white-space:nowrap; }
+.q u{ text-decoration:none; color:var(--muted); font-weight:500; font-size:11.5px; margin-left:3px; }
+.other{ padding:8px 14px 12px; font-size:12px; color:var(--muted); }
+.other summary{ cursor:pointer; }
+.issues{ list-style:none; margin:0; padding:0; }
+.issues li{ display:grid; grid-template-columns:24px minmax(0,1fr); gap:10px; padding:12px 14px; border-top:1px solid var(--soft); cursor:pointer; }
+.issues li:hover{ background:var(--soft); }
+.issues b{ width:22px; height:22px; border-radius:6px; background:var(--warn-bg); color:var(--warn); display:flex; align-items:center; justify-content:center; font-size:12px; }
+.issues p{ margin:0; font-size:13px; }
+.issues small{ color:var(--muted); font-size:11.5px; }
+.empty{ padding:28px 16px; color:var(--muted); text-align:center; font-size:13px; }
+.foot{ display:flex; gap:8px; padding:10px; border-top:1px solid var(--line); flex-wrap:wrap; }
+.foot .note{ font-size:11.5px; color:var(--muted); flex-basis:100%; }
+
+.viewer{ position:relative; background:var(--surface); border:1px solid var(--line); border-radius:var(--r); display:flex; flex-direction:column; min-height:0; min-width:0; overflow:hidden; }
+@media (max-width:860px){ .viewer{ order:1; height:62vh; } }
+.vbar{ display:flex; align-items:center; gap:8px; padding:8px 10px; border-bottom:1px solid var(--line); font-size:12.5px; color:var(--muted); flex-wrap:wrap; }
+.vbar .fname{ font-family:var(--mono); color:var(--ink); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; min-width:0; flex:1; }
+.zoom button{ width:32px; padding:0; justify-content:center; }
+.stage{ flex:1; overflow:auto; background:repeating-linear-gradient(45deg, var(--soft) 0 10px, var(--bg) 10px 20px); position:relative; min-height:0; }
+.sheet{ position:relative; margin:14px; background:var(--sheet); box-shadow:0 1px 3px rgba(0,0,0,.12), 0 8px 24px rgba(0,0,0,.08); }
+.sheet canvas{ display:block; width:100%; height:auto; }
+.sheet svg{ position:absolute; inset:0; width:100%; height:100%; overflow:visible; }
+.mk{ transition:opacity .2s; }
+.dim .mk:not(.on){ opacity:.1; }
+.flag polygon{ fill:#FFD54A; stroke:#8A5A00; stroke-width:1; }
+.flag text{ font:700 9px var(--sans); fill:#5C3B00; }
+.drop{ position:absolute; inset:0; display:none; align-items:center; justify-content:center; background:color-mix(in srgb, var(--accent) 12%, transparent); border:2px dashed var(--accent); font-weight:700; color:var(--accent); font-size:16px; z-index:5; }
+.viewer.dragging .drop{ display:flex; }
+.busy{ position:absolute; inset:auto 12px 12px auto; background:var(--surface); border:1px solid var(--line); border-radius:8px; padding:6px 10px; font-size:12px; color:var(--muted); box-shadow:0 2px 8px rgba(0,0,0,.08); }
+.toast{ position:fixed; left:50%; bottom:calc(18px + env(safe-area-inset-bottom,0px)); transform:translateX(-50%); background:var(--ink); color:var(--bg); padding:9px 14px; border-radius:8px; font-size:13px; z-index:20; }
+.sr{ position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; }
+@media (prefers-reduced-motion: reduce){ .mk{ transition:none; } }
+</style>
+
+</head>
+<body>
+<div class="app">
+  <header class="bar">
+    <div class="brand"><h1><a href="/automation/civil-engineering-quantity-takeoff/" style="color:inherit;text-decoration:none;">Drawing Takeoff</a></h1><span>by <a href="/" style="color:inherit;">DoVoWorld</a> · counts, lengths and areas from CAD PDF drawings</span></div>
+    <div class="seg" role="group" aria-label="Sample drawings">
+      <button type="button" id="s1" data-sample="sample-external-works.pdf" aria-pressed="true">Sample: drainage</button>
+      <button type="button" id="s2" data-sample="sample-lighting-layout.pdf" aria-pressed="false">Sample: lighting</button>
+    </div>
+    <label class="btn primary" for="file">Open your PDF</label>
+    <input id="file" type="file" accept="application/pdf,.pdf" class="sr">
+  </header>
+
+  <div class="main">
+    <aside class="panel" aria-label="Takeoff results">
+      <div class="tabs" role="tablist">
+        <button type="button" role="tab" id="tab-take" aria-controls="pane-take" aria-selected="true">Takeoff <span class="pill" id="n-take">0</span></button>
+        <button type="button" role="tab" id="tab-iss" aria-controls="pane-iss" aria-selected="false" tabindex="-1">Issues <span class="pill warn" id="n-iss">0</span></button>
+      </div>
+      <div class="scroll">
+        <div id="pane-take" role="tabpanel" aria-labelledby="tab-take"></div>
+        <div id="pane-iss" role="tabpanel" aria-labelledby="tab-iss" hidden></div>
+      </div>
+      <div class="foot">
+        <button type="button" class="btn" id="export">Download CSV for Excel</button>
+        <div class="ctl scale"><label for="scale">Scale 1:</label><input id="scale" type="number" min="1" step="1" inputmode="numeric"><small id="scale-src"></small></div>
+        <div class="note">Click a row to highlight it on the drawing. Quantities are real-world, from the drawing scale.</div>
+      </div>
+    </aside>
+
+    <section class="viewer" id="viewer" aria-label="Drawing">
+      <div class="vbar">
+        <span class="fname" id="fname">Loading sample...</span>
+        <select id="page" aria-label="Page" hidden></select>
+        <div class="seg zoom" role="group" aria-label="Zoom">
+          <button type="button" id="zout" aria-label="Zoom out">&minus;</button>
+          <button type="button" id="zfit" aria-label="Fit to width">Fit</button>
+          <button type="button" id="zin" aria-label="Zoom in">+</button>
+        </div>
+      </div>
+      <div class="stage" id="stage">
+        <div class="sheet" id="sheet"><canvas id="cv"></canvas><svg id="ov" aria-hidden="true"></svg></div>
+      </div>
+      <div class="drop">Drop a PDF drawing to measure it</div>
+      <div class="busy" id="busy" hidden>Reading drawing...</div>
+    </section>
+  </div>
+  <div class="sr" role="status" aria-live="polite" id="live"></div>
+</div>
+<div class="toast" id="toast" hidden></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script>
+(function(){
+'use strict';
+const pdfjs = window.pdfjsLib;
+pdfjs.GlobalWorkerOptions.workerSrc = '/automation/civil-engineering-quantity-takeoff/app/pdf.worker.min.js';
+const OPS = pdfjs.OPS;
+const MM = 72 / 25.4;                       // PDF points per millimetre on paper
+const SYMBOL_MAX = 9 * MM;                  // anything larger is not a symbol
+const LONG_LINE = 15 * MM;                  // open strokes this long define a line type
+const PALETTE = ['#1D5FD1','#D9480F','#1E7A3C','#8E44AD','#C2185B','#0F8B8D','#B7791F','#5C6BC0','#6D4C41','#2E7D32','#AD1457','#00838F'];
+const $ = id => document.getElementById(id);
+
+const state = { doc:null, name:'', pageNo:1, page:null, vp:null, data:null, res:null, scale:null, scaleSrc:'', focus:null, zoom:1, dl:null };
+
+/* ---------------- geometry helpers ---------------- */
+const mul = (m, n) => [m[0]*n[0]+m[2]*n[1], m[1]*n[0]+m[3]*n[1], m[0]*n[2]+m[2]*n[3], m[1]*n[2]+m[3]*n[3], m[0]*n[4]+m[2]*n[5]+m[4], m[1]*n[4]+m[3]*n[5]+m[5]];
+const app = (m, x, y) => [m[0]*x + m[2]*y + m[4], m[1]*x + m[3]*y + m[5]];
+const hex = v => ('0' + Math.round(v).toString(16)).slice(-2);
+function color(a){ if (a.length === 1 && typeof a[0] === 'string') return a[0].toLowerCase(); return '#' + hex(a[0]) + hex(a[1]) + hex(a[2]); }
+function bez(p0, p1, p2, p3, out){ for (let i = 1; i <= 8; i++){ const t = i/8, u = 1-t; out.push([u*u*u*p0[0]+3*u*u*t*p1[0]+3*u*t*t*p2[0]+t*t*t*p3[0], u*u*u*p0[1]+3*u*u*t*p1[1]+3*u*t*t*p2[1]+t*t*t*p3[1]]); } }
+
+/* ---------------- 1. read vector shapes and text from the page ---------------- */
+async function extract(page){
+  const ol = await page.getOperatorList();
+  let st = { ctm:[1,0,0,1,0,0], stroke:'#000000', fill:'#000000', lw:1, dash:'' };
+  const stack = [], shapes = [];
+  let subs = [], cur = null, nops = 0;
+  const startSub = p => { cur = { pts:[p], closed:false }; subs.push(cur); };
+  function addPath(a){
+    const ops = a[0], c = a[1]; let k = 0;
+    for (const op of ops){
+      if (op === OPS.moveTo){ startSub(app(st.ctm, c[k], c[k+1])); k += 2; }
+      else if (op === OPS.lineTo){ const p = app(st.ctm, c[k], c[k+1]); k += 2; if (!cur) startSub(p); else cur.pts.push(p); }
+      else if (op === OPS.curveTo || op === OPS.curveTo2 || op === OPS.curveTo3){
+        let p1, p2, p3; const p0 = cur ? cur.pts[cur.pts.length-1] : [0,0];
+        if (op === OPS.curveTo){ p1 = app(st.ctm,c[k],c[k+1]); p2 = app(st.ctm,c[k+2],c[k+3]); p3 = app(st.ctm,c[k+4],c[k+5]); k += 6; }
+        else if (op === OPS.curveTo2){ p1 = p0; p2 = app(st.ctm,c[k],c[k+1]); p3 = app(st.ctm,c[k+2],c[k+3]); k += 4; }
+        else { p1 = app(st.ctm,c[k],c[k+1]); p3 = app(st.ctm,c[k+2],c[k+3]); p2 = p3; k += 4; }
+        if (!cur) startSub(p0); bez(p0, p1, p2, p3, cur.pts);
+      }
+      else if (op === OPS.closePath){ if (cur){ cur.closed = true; cur = null; } }
+      else if (op === OPS.rectangle){
+        const x = c[k], y = c[k+1], w = c[k+2], h = c[k+3]; k += 4;
+        subs.push({ pts:[app(st.ctm,x,y), app(st.ctm,x+w,y), app(st.ctm,x+w,y+h), app(st.ctm,x,y+h)], closed:true, rect:true }); cur = null;
+      }
+      nops++;
+    }
+  }
+  function paint(stroke, fill, close){
+    if (!subs.length){ return; }
+    if (close) subs.forEach(s => s.closed = true);
+    const sc = Math.sqrt(Math.abs(st.ctm[0]*st.ctm[3] - st.ctm[1]*st.ctm[2])) || 1;
+    let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity, len = 0, area = 0;
+    for (const s of subs){
+      const P = s.pts;
+      for (let i = 0; i < P.length; i++){
+        const p = P[i]; if (p[0] < x0) x0 = p[0]; if (p[0] > x1) x1 = p[0]; if (p[1] < y0) y0 = p[1]; if (p[1] > y1) y1 = p[1];
+        if (i) len += Math.hypot(p[0]-P[i-1][0], p[1]-P[i-1][1]);
+      }
+      if ((s.closed || fill) && P.length > 2){
+        if (s.closed) len += Math.hypot(P[0][0]-P[P.length-1][0], P[0][1]-P[P.length-1][1]);
+        let a = 0; for (let i = 0; i < P.length; i++){ const p = P[i], q = P[(i+1) % P.length]; a += p[0]*q[1] - q[0]*p[1]; }
+        area += Math.abs(a) / 2;
+      }
+    }
+    const closed = subs.every(s => s.closed) || (fill && !stroke);
+    shapes.push({ subs, stroke: stroke ? st.stroke : null, fill: fill ? st.fill : null, lw: Math.round(st.lw * sc * 100) / 100, dash: stroke ? st.dash : '',
+      closed, isRect: subs.length === 1 && !!subs[0].rect, x0, y0, x1, y1, w: x1-x0, h: y1-y0, len, area, nops });
+    subs = []; cur = null; nops = 0;
+  }
+  const F = ol.fnArray, A = ol.argsArray;
+  for (let i = 0; i < F.length; i++){
+    const fn = F[i], a = A[i];
+    switch (fn){
+      case OPS.save: stack.push({ ...st, ctm: st.ctm.slice() }); break;
+      case OPS.restore: if (stack.length) st = stack.pop(); break;
+      case OPS.transform: st.ctm = mul(st.ctm, a); break;
+      case OPS.paintFormXObjectBegin: stack.push({ ...st, ctm: st.ctm.slice() }); if (a && a[0] && a[0].length === 6) st.ctm = mul(st.ctm, a[0]); break;
+      case OPS.paintFormXObjectEnd: if (stack.length) st = stack.pop(); break;
+      case OPS.setLineWidth: st.lw = a[0]; break;
+      case OPS.setDash: st.dash = (a[0] || []).map(v => Math.round(v * 10) / 10).join(','); break;
+      case OPS.setStrokeRGBColor: st.stroke = color(a); break;
+      case OPS.setFillRGBColor: st.fill = color(a); break;
+      case OPS.constructPath: addPath(a); break;
+      case OPS.stroke: paint(true, false, false); break;
+      case OPS.closeStroke: paint(true, false, true); break;
+      case OPS.fill: case OPS.eoFill: paint(false, true, false); break;
+      case OPS.fillStroke: case OPS.eoFillStroke: paint(true, true, false); break;
+      case OPS.closeFillStroke: case OPS.closeEOFillStroke: paint(true, true, true); break;
+      case OPS.endPath: subs = []; cur = null; nops = 0; break;
+    }
+  }
+  const tc = await page.getTextContent();
+  const texts = tc.items.filter(t => t.str && t.str.trim()).map(t => {
+    const x = t.transform[4], y = t.transform[5], h = Math.hypot(t.transform[2], t.transform[3]) || t.height || 6;
+    return { str: t.str.replace(/\s+/g, ' ').trim(), x, y, w: t.width, h, cx: x + t.width / 2, cy: y + h / 2 };
+  });
+  return { shapes, texts };
+}
+
+/* ---------------- 2. turn shapes into a takeoff ---------------- */
+const inR = (x, y, R) => R && x >= R.x0 && x <= R.x1 && y >= R.y0 && y <= R.y1;
+const styleKey = s => `${s.stroke}|${s.lw.toFixed(1)}|${s.dash}`;
+
+function analyse(data){
+  const { shapes, texts } = data;
+  const rects = shapes.filter(s => s.isRect && s.w > 20 && s.h > 20).sort((a, b) => a.w*a.h - b.w*b.h);
+  const smallestAround = (t) => rects.find(r => inR(t.cx, t.cy, r) && !(r.w > 0.8 * pageW && r.h > 0.8 * pageH)) || null;
+  const pageW = state.vp.viewBox[2] - state.vp.viewBox[0], pageH = state.vp.viewBox[3] - state.vp.viewBox[1];
+  const legT = texts.find(t => /^(legend|key|symbols?)\b/i.test(t.str));
+  const legend = legT ? smallestAround(legT) : null;
+  const scaleT = texts.filter(t => /\b1\s*:\s*\d{1,5}\b/.test(t.str));
+  const title = scaleT.length ? smallestAround(scaleT[0]) : null;
+  const zone = s => { const cx = (s.x0 + s.x1) / 2, cy = (s.y0 + s.y1) / 2; return inR(cx, cy, legend) ? 'legend' : inR(cx, cy, title) ? 'title' : 'main'; };
+
+  // scale
+  let scale = null, scaleSrc = '';
+  const sc = (title ? scaleT.filter(t => inR(t.cx, t.cy, title)) : scaleT)[0] || scaleT[0];
+  if (sc){ scale = +sc.str.match(/\b1\s*:\s*(\d{1,5})\b/)[1]; scaleSrc = 'from title block'; }
+
+  // which stroke styles are "line types" (long open strokes)
+  const lineStyles = new Set();
+  shapes.forEach(s => { if (s.stroke && !s.fill && !s.closed && Math.max(s.w, s.h) >= LONG_LINE) lineStyles.add(styleKey(s)); });
+
+  const comps = [], lines = [], areas = [];
+  shapes.forEach(s => {
+    s.zone = zone(s);
+    if (s.zone === 'title') return;
+    if (s.isRect && s.w > 0.8 * pageW && s.h > 0.8 * pageH) return;            // sheet border
+    const size = Math.max(s.w, s.h);
+    const isLineSeg = s.stroke && !s.fill && !s.closed && lineStyles.has(styleKey(s));
+    if (size <= SYMBOL_MAX && !isLineSeg && size > 0.2) comps.push(s);
+    else {
+      if (s.fill && s.closed && s.fill !== '#ffffff' && size > SYMBOL_MAX) areas.push(s);
+      if (s.stroke && size > 0) lines.push(s);
+    }
+  });
+
+  // join touching components into glyphs (union-find on a spatial grid)
+  const par = comps.map((_, i) => i);
+  const find = i => { while (par[i] !== i){ par[i] = par[par[i]]; i = par[i]; } return i; };
+  const cell = SYMBOL_MAX, grid = new Map(), tol = 0.3;
+  comps.forEach((c, i) => {
+    for (let gx = Math.floor((c.x0 - tol) / cell); gx <= Math.floor((c.x1 + tol) / cell); gx++)
+      for (let gy = Math.floor((c.y0 - tol) / cell); gy <= Math.floor((c.y1 + tol) / cell); gy++){
+        const key = gx + ',' + gy; const list = grid.get(key) || []; list.push(i); grid.set(key, list);
+      }
+  });
+  grid.forEach(list => {
+    for (let a = 0; a < list.length; a++) for (let b = a + 1; b < list.length; b++){
+      const p = comps[list[a]], q = comps[list[b]];
+      if (p.zone !== q.zone) continue;
+      if (p.x0 <= q.x1 + tol && q.x0 <= p.x1 + tol && p.y0 <= q.y1 + tol && q.y0 <= p.y1 + tol){ const ra = find(list[a]), rb = find(list[b]); if (ra !== rb) par[ra] = rb; }
+    }
+  });
+  const glyphMap = new Map();
+  comps.forEach((c, i) => { const r = find(i); if (!glyphMap.has(r)) glyphMap.set(r, []); glyphMap.get(r).push(c); });
+  const q = v => Math.round(v / 0.75);
+  const glyphs = [];
+  glyphMap.forEach(parts => {
+    let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+    parts.forEach(p => { x0 = Math.min(x0, p.x0); y0 = Math.min(y0, p.y0); x1 = Math.max(x1, p.x1); y1 = Math.max(y1, p.y1); });
+    if (Math.max(x1 - x0, y1 - y0) > SYMBOL_MAX * 1.4) return;          // merged clutter, not a symbol
+    const sig = parts.map(p => [q(p.x0 - x0), q(p.y0 - y0), q(p.w), q(p.h), p.stroke || '-', p.fill || '-', p.closed ? 1 : 0].join(':')).sort().join('|');
+    glyphs.push({ sig, x0, y0, x1, y1, cx: (x0 + x1) / 2, cy: (y0 + y1) / 2, zone: parts[0].zone, parts });
+  });
+
+  // legend rows: text to the right of a legend sample on the same line
+  const rowText = (y0, y1, xRight) => {
+    const my = (y0 + y1) / 2;
+    const row = texts.filter(t => inR(t.cx, t.cy, legend) && t.x >= xRight - 1 && Math.abs(t.cy - my) < Math.max(5, (y1 - y0) / 2 + 3)).sort((a, b) => a.x - b.x);
+    if (!row.length) return null;
+    const full = row.map(t => t.str).join(' ').replace(/\s+/g, ' ').trim();
+    const m = full.match(/(\d+(?:\.\d+)?)\s*(no\.?|nr\.?|nos\.?|pcs?\.?|units?)\s*$/i);
+    return { name: (m ? full.slice(0, m.index) : full).trim().replace(/[:\-\u2013]\s*$/, ''), qty: m ? +m[1] : null, y: my };
+  };
+
+  // symbol groups
+  const groups = new Map();
+  glyphs.forEach(g => {
+    if (!groups.has(g.sig)) groups.set(g.sig, { sig: g.sig, inst: [], legend: null });
+    const G = groups.get(g.sig);
+    if (g.zone === 'legend'){ const r = rowText(g.y0, g.y1, g.x1); if (r && !G.legend) G.legend = { ...r, x: g.cx, y: g.cy }; }
+    else G.inst.push(g);
+  });
+  let counts = [...groups.values()].filter(G => G.inst.length && (G.legend || G.inst.length >= 2));
+  counts.sort((a, b) => (b.legend ? 1e6 + b.legend.y : 0) - (a.legend ? 1e6 + a.legend.y : 0) || b.inst.length - a.inst.length);
+  let letter = 0;
+  counts.forEach(G => { G.name = G.legend ? G.legend.name : 'Unnamed symbol ' + String.fromCharCode(65 + letter++); G.kind = 'count'; });
+
+  // line types
+  const legendLine = new Map(), legendFill = new Map();
+  shapes.filter(s => s.zone === 'legend').forEach(s => {
+    if (s.stroke && !s.fill && !s.closed && s.h < 3 && s.w > 3 * MM){ const r = rowText(s.y0 - 2, s.y1 + 2, s.x1); if (r && !legendLine.has(styleKey(s))) legendLine.set(styleKey(s), r); }
+    if (s.fill && s.closed && s.fill !== '#ffffff' && s.w > 3 * MM){ const r = rowText(s.y0, s.y1, s.x1); if (r && !legendFill.has(s.fill)) legendFill.set(s.fill, r); }
+  });
+  const lmap = new Map();
+  lines.filter(s => s.zone === 'main').forEach(s => { const k = styleKey(s); if (!lmap.has(k)) lmap.set(k, { key: k, color: s.stroke, shapes: [], len: 0 }); const L = lmap.get(k); L.shapes.push(s); L.len += s.len; });
+  const lens = [], otherLines = [];
+  lmap.forEach(L => { const lg = legendLine.get(L.key); if (lg){ L.name = lg.name; L.legend = lg; L.kind = 'length'; lens.push(L); } else otherLines.push(L); });
+  lens.sort((a, b) => b.legend.y - a.legend.y);
+
+  // areas
+  const amap = new Map();
+  areas.filter(s => s.zone === 'main').forEach(s => { if (!amap.has(s.fill)) amap.set(s.fill, { key: s.fill, color: s.fill, shapes: [], area: 0 }); const A_ = amap.get(s.fill); A_.shapes.push(s); A_.area += s.area; });
+  const ars = [], otherAreas = [];
+  amap.forEach(A_ => { const lg = legendFill.get(A_.key); if (lg){ A_.name = lg.name; A_.legend = lg; A_.kind = 'area'; ars.push(A_); } else otherAreas.push(A_); });
+  ars.sort((a, b) => b.legend.y - a.legend.y);
+
+  // colours
+  let ci = 0; [...counts, ...lens, ...ars].forEach(G => { G.id = 'g' + ci; G.col = G.kind === 'count' ? PALETTE[ci % PALETTE.length] : (G.color && G.color !== '#000000' ? G.color : PALETTE[ci % PALETTE.length]); ci++; });
+
+  // issues
+  const issues = [];
+  if (!scale) issues.push({ text: 'No drawing scale found on this sheet.', sub: 'Enter the scale (for example 1:100) so lengths and areas can be worked out.', at: null });
+  counts.forEach(G => {
+    if (G.legend && G.legend.qty != null && G.legend.qty !== G.inst.length)
+      issues.push({ text: `${G.name}: the legend says ${G.legend.qty}, the drawing shows ${G.inst.length}.`, sub: 'Check the schedule or the drawing before pricing.', at: [G.legend.x, G.legend.y], gid: G.id });
+  });
+  [...groups.values()].filter(G => G.legend && !G.inst.length).forEach(G => issues.push({ text: `${G.legend.name} is in the legend but was not found on the drawing.`, sub: 'It may be missing, drawn differently, or on another sheet.', at: [G.legend.x, G.legend.y] }));
+  const mainTexts = texts.filter(t => !inR(t.cx, t.cy, legend) && !inR(t.cx, t.cy, title));
+  counts.forEach(G => {
+    if (G.inst.length < 3) return;
+    const lab = G.inst.map(g => {
+      let best = null, bd = 6 * MM;
+      mainTexts.forEach(t => { const d = Math.hypot(Math.max(0, g.x0 - (t.x + t.w), t.x - g.x1), Math.max(0, g.y0 - (t.y + t.h), t.y - g.y1)); if (d < bd && /^[A-Z]{1,4}[-\s]?\d+[A-Z]?$/i.test(t.str)){ bd = d; best = t; } });
+      return best;
+    });
+    const have = lab.filter(Boolean);
+    if (have.length >= 0.6 * G.inst.length && have.length < G.inst.length){
+      const names = have.map(t => t.str).slice(0, 6).join(', ');
+      G.inst.forEach((g, i) => { if (!lab[i]) issues.push({ text: `A ${G.name.toLowerCase()} has no label.`, sub: `Others are labelled (${names}). Each one usually needs a reference.`, at: [g.cx, g.cy], gid: G.id }); });
+    }
+  });
+
+  return { counts, lens, ars, otherLines, otherAreas, issues, scale, scaleSrc, legend, title, glyphs };
+}
+
+/* ---------------- 3. render ---------------- */
+const toV = (x, y) => state.vp.convertToViewportPoint(x, y);
+const fmt = (n, d) => n.toLocaleString('en-GB', { minimumFractionDigits: d, maximumFractionDigits: d });
+const realLen = pts => pts / MM * state.scale / 1000;
+const realArea = pts2 => pts2 / (MM * MM) * state.scale * state.scale / 1e6;
+
+function qtyOf(G){
+  if (G.kind === 'count') return { v: G.inst.length, s: String(G.inst.length), u: 'no.' };
+  if (!state.scale) return { v: null, s: '\u2013', u: G.kind === 'length' ? 'm' : 'm\u00b2' };
+  if (G.kind === 'length'){ const v = realLen(G.len); return { v, s: fmt(v, 1), u: 'm' }; }
+  const v = realArea(G.area); return { v, s: fmt(v, 1), u: 'm\u00b2' };
+}
+
+function renderPanel(){
+  const R = state.res, take = $('pane-take'), iss = $('pane-iss');
+  const all = [...R.counts, ...R.lens, ...R.ars];
+  $('n-take').textContent = all.length; $('n-iss').textContent = R.issues.length;
+  if (!all.length){
+    take.innerHTML = '<div class="empty">No symbols, line types or areas were found on this page. If it is a scanned drawing, it has no vector linework to read. This version reads PDFs exported from CAD.</div>';
+  } else {
+    let h = '';
+    const sec = (title, list, cls) => {
+      if (!list.length) return;
+      h += `<div class="sec"><span>${title}</span><span>${list.length}</span></div>`;
+      list.forEach(G => {
+        const Q = qtyOf(G);
+        let sub = '';
+        if (G.kind === 'count' && G.legend && G.legend.qty != null) sub = G.legend.qty === G.inst.length ? `<small>Matches legend (${G.legend.qty})</small>` : `<small class="bad">Legend says ${G.legend.qty}</small>`;
+        if (G.kind === 'count' && !G.legend) sub = '<small>Repeated symbol, not in the legend</small>';
+        h += `<button type="button" class="row" data-g="${G.id}" aria-pressed="${state.focus === G.id}"><span class="sw ${cls}" style="background:${G.col}"></span><span class="nm"></span><span class="q">${Q.s}<u>${Q.u}</u></span></button>`;
+        h = h.replace('<span class="nm"></span>', `<span class="nm">${esc(G.name)}${sub}</span>`);
+      });
+    };
+    sec('Counts', R.counts, ''); sec('Lengths', R.lens, 'line'); sec('Areas', R.ars, 'area');
+    const ol = R.otherLines.length + R.otherAreas.length;
+    if (ol) h += `<details class="other"><summary>${ol} other line types and fills without a legend entry</summary><p>Usually walls, borders and text frames. Add them to the drawing legend to include them in the takeoff.</p></details>`;
+    take.innerHTML = h;
+  }
+  if (!R.issues.length) iss.innerHTML = '<div class="empty">No issues found on this page.</div>';
+  else iss.innerHTML = '<ol class="issues">' + R.issues.map((it, i) => `<li data-i="${i}" tabindex="0"><b>${i + 1}</b><div><p>${esc(it.text)}</p><small>${esc(it.sub || '')}</small></div></li>`).join('') + '</ol>';
+}
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' })[c]);
+
+function renderOverlay(){
+  const R = state.res, svg = $('ov'), vp = state.vp;
+  svg.setAttribute('viewBox', `0 0 ${vp.width} ${vp.height}`);
+  let h = '';
+  const poly = (sub) => sub.pts.map(p => toV(p[0], p[1]).map(v => v.toFixed(1)).join(',')).join(' ');
+  R.ars.forEach(G => { h += `<g class="mk" data-g="${G.id}">` + G.shapes.map(s => s.subs.map(sb => `<polygon points="${poly(sb)}" fill="${G.col}" fill-opacity=".28" stroke="${G.col}" stroke-width="1.5"/>`).join('')).join('') + '</g>'; });
+  R.lens.forEach(G => { h += `<g class="mk" data-g="${G.id}">` + G.shapes.map(s => s.subs.map(sb => `<polyline points="${poly(sb)}${sb.closed ? ' ' + poly({ pts:[sb.pts[0]] }) : ''}" fill="none" stroke="${G.col}" stroke-width="3.5" stroke-opacity=".45" stroke-linecap="round"/>`).join('')).join('') + '</g>'; });
+  R.counts.forEach(G => { h += `<g class="mk" data-g="${G.id}">` + G.inst.map(g => { const [x, y] = toV(g.cx, g.cy); const r = Math.max(4.5, (g.x1 - g.x0) / 2 + 2.5); return `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${r.toFixed(1)}" fill="${G.col}" fill-opacity=".18" stroke="${G.col}" stroke-width="1.6"/>`; }).join('') + '</g>'; });
+  R.issues.forEach((it, i) => { if (!it.at) return; const [x, y] = toV(it.at[0], it.at[1]); const fx = x + 9, fy = y - 9; h += `<g class="flag" data-i="${i}"><polygon points="${fx},${fy - 9} ${fx + 8},${fy + 5} ${fx - 8},${fy + 5}"/><text x="${fx}" y="${fy + 3}" text-anchor="middle">${i + 1}</text></g>`; });
+  svg.innerHTML = h;
+  applyFocus();
+}
+
+function applyFocus(){
+  const svg = $('ov');
+  svg.classList.toggle('dim', !!state.focus);
+  svg.querySelectorAll('.mk').forEach(g => g.classList.toggle('on', g.dataset.g === state.focus));
+  document.querySelectorAll('.row').forEach(r => r.setAttribute('aria-pressed', r.dataset.g === state.focus));
+}
+
+async function renderCanvas(){
+  const page = state.page, base = page.getViewport({ scale: 1 });
+  const target = Math.min(3, 4200 / base.width);            // crisp but bounded
+  const v = page.getViewport({ scale: target });
+  const cv = $('cv'), ctx = cv.getContext('2d');
+  cv.width = Math.floor(v.width); cv.height = Math.floor(v.height);
+  ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, cv.width, cv.height);
+  await page.render({ canvasContext: ctx, viewport: v }).promise;
+  setZoom(state.zoom);
+}
+function setZoom(z){
+  state.zoom = Math.max(0.5, Math.min(6, z));
+  const stage = $('stage'), w = (stage.clientWidth - 28) * state.zoom;
+  $('sheet').style.width = Math.max(200, w) + 'px';
+}
+
+/* ---------------- 4. loading ---------------- */
+function busy(on, msg){ $('busy').hidden = !on; if (msg) $('busy').textContent = msg; }
+function toast(msg){ const t = $('toast'); t.textContent = msg; t.hidden = false; clearTimeout(toast.t); toast.t = setTimeout(() => t.hidden = true, 3200); }
+
+async function openDoc(src, name){
+  busy(true, 'Reading drawing...');
+  try {
+    const doc = await pdfjs.getDocument(src).promise;
+    state.doc = doc; state.name = name; state.focus = null; state.zoom = 1;
+    $('fname').textContent = name;
+    const sel = $('page'); sel.hidden = doc.numPages < 2;
+    sel.innerHTML = Array.from({ length: doc.numPages }, (_, i) => `<option value="${i + 1}">Page ${i + 1} of ${doc.numPages}</option>`).join('');
+    await openPage(1);
+  } catch (e){
+    console.error(e); busy(false); toast('This file could not be opened as a PDF.');
+    $('fname').textContent = 'Could not open ' + name;
+  }
+}
+async function openPage(n){
+  busy(true, 'Measuring page ' + n + '...');
+  state.pageNo = n; state.page = await state.doc.getPage(n); state.vp = state.page.getViewport({ scale: 1 }); state.focus = null;
+  await renderCanvas();
+  state.data = await extract(state.page);
+  state.res = analyse(state.data);
+  state.scale = state.res.scale; state.scaleSrc = state.res.scale ? state.res.scaleSrc : 'not found';
+  $('scale').value = state.scale || ''; $('scale-src').textContent = state.scaleSrc;
+  renderPanel(); renderOverlay(); busy(false);
+  const R = state.res;
+  $('live').textContent = `${R.counts.length} symbol types, ${R.lens.length} line types, ${R.ars.length} areas and ${R.issues.length} issues found.`;
+}
+async function loadSample(file){
+  document.querySelectorAll('[data-sample]').forEach(b => b.setAttribute('aria-pressed', b.dataset.sample === file));
+  try { const r = await fetch('/automation/civil-engineering-quantity-takeoff/app/' + file); if (!r.ok) throw new Error(r.status); const buf = await r.arrayBuffer(); await openDoc({ data: new Uint8Array(buf) }, file); }
+  catch (e){ busy(false); $('fname').textContent = 'Sample could not be loaded'; }
+}
+
+/* ---------------- 5. interactions ---------------- */
+document.querySelectorAll('[data-sample]').forEach(b => b.addEventListener('click', () => loadSample(b.dataset.sample)));
+$('file').addEventListener('change', e => { const f = e.target.files[0]; if (f) readFile(f); e.target.value = ''; });
+function readFile(f){
+  if (!/pdf$/i.test(f.type) && !/\.pdf$/i.test(f.name)){ toast('Please choose a PDF drawing.'); return; }
+  document.querySelectorAll('[data-sample]').forEach(b => b.setAttribute('aria-pressed', 'false'));
+  const fr = new FileReader(); fr.onload = () => openDoc({ data: new Uint8Array(fr.result) }, f.name); fr.readAsArrayBuffer(f);
+}
+const viewer = $('viewer');
+['dragenter', 'dragover'].forEach(ev => viewer.addEventListener(ev, e => { e.preventDefault(); viewer.classList.add('dragging'); }));
+['dragleave', 'drop'].forEach(ev => viewer.addEventListener(ev, e => { e.preventDefault(); if (ev === 'dragleave' && viewer.contains(e.relatedTarget)) return; viewer.classList.remove('dragging'); }));
+viewer.addEventListener('drop', e => { const f = e.dataTransfer.files[0]; if (f) readFile(f); });
+$('page').addEventListener('change', e => openPage(+e.target.value));
+$('zin').addEventListener('click', () => setZoom(state.zoom * 1.4));
+$('zout').addEventListener('click', () => setZoom(state.zoom / 1.4));
+$('zfit').addEventListener('click', () => setZoom(1));
+window.addEventListener('resize', () => setZoom(state.zoom));
+$('scale').addEventListener('input', e => { const v = +e.target.value; state.scale = v > 0 ? v : null; $('scale-src').textContent = state.scale && state.scale === state.res.scale ? state.res.scaleSrc : (state.scale ? 'entered' : 'not set'); renderPanel(); applyFocus(); });
+
+$('pane-take').addEventListener('click', e => {
+  const r = e.target.closest('.row'); if (!r) return;
+  state.focus = state.focus === r.dataset.g ? null : r.dataset.g; applyFocus();
+  if (state.focus){ const m = $('ov').querySelector(`.mk[data-g="${state.focus}"] > *`); if (m) scrollToEl(m); }
+});
+function scrollToEl(el){
+  const st = $('stage'), b = el.getBoundingClientRect(), sb = st.getBoundingClientRect();
+  if (b.top < sb.top || b.bottom > sb.bottom || b.left < sb.left || b.right > sb.right)
+    st.scrollBy({ top: b.top - sb.top - sb.height / 2, left: b.left - sb.left - sb.width / 2, behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+}
+function pickIssue(li){
+  const it = state.res.issues[+li.dataset.i]; state.focus = it.gid || null; applyFocus();
+  const f = $('ov').querySelector(`.flag[data-i="${li.dataset.i}"]`); if (f){ if (state.zoom < 2) setZoom(2.2); requestAnimationFrame(() => scrollToEl(f)); }
+}
+$('pane-iss').addEventListener('click', e => { const li = e.target.closest('li'); if (li) pickIssue(li); });
+$('pane-iss').addEventListener('keydown', e => { if (e.key === 'Enter'){ const li = e.target.closest('li'); if (li) pickIssue(li); } });
+
+const tabs = [$('tab-take'), $('tab-iss')];
+function selTab(t){ tabs.forEach(x => { const on = x === t; x.setAttribute('aria-selected', on); x.tabIndex = on ? 0 : -1; $(x.getAttribute('aria-controls')).hidden = !on; }); }
+tabs.forEach(t => { t.addEventListener('click', () => selTab(t)); t.addEventListener('keydown', e => { if (e.key === 'ArrowRight' || e.key === 'ArrowLeft'){ const o = tabs[1 - tabs.indexOf(t)]; o.focus(); selTab(o); } }); });
+
+/* ---------------- 6. export ---------------- */
+function csv(){
+  const R = state.res, rows = [['Type', 'Item', 'Quantity', 'Unit', 'Legend quantity', 'Note']];
+  [...R.counts, ...R.lens, ...R.ars].forEach(G => {
+    const Q = qtyOf(G);
+    rows.push([G.kind === 'count' ? 'Count' : G.kind === 'length' ? 'Length' : 'Area', G.name, Q.v == null ? '' : (G.kind === 'count' ? Q.v : Q.v.toFixed(2)), Q.u, G.legend && G.legend.qty != null ? G.legend.qty : '', G.kind === 'count' && G.legend && G.legend.qty != null && G.legend.qty !== G.inst.length ? 'Does not match legend' : '']);
+  });
+  rows.push([]); rows.push(['Drawing', state.name, 'Page ' + state.pageNo, 'Scale 1:' + (state.scale || '?')]);
+  R.issues.forEach((it, i) => rows.push(['Issue ' + (i + 1), it.text]));
+  return rows.map(r => r.map(c => { c = String(c); return /[",\n]/.test(c) ? '"' + c.replace(/"/g, '""') + '"' : c; }).join(',')).join('\n');
+}
+$('export').addEventListener('click', async () => {
+  const text = csv(), fname = 'takeoff-' + state.name.replace(/\.pdf$/i, '').replace(/[^\w-]+/g, '-') + '.csv';
+  if (state.dl){
+    try { await state.dl.save({ filename: fname, data: text }); toast('Saved ' + fname); }
+    catch (e){ if (e && e.code === 'declined') return; if (e && e.code === 'rate_limited') toast('A save is already waiting for your answer.'); else copyFallback(text); }
+  } else {
+    try {
+      const url = URL.createObjectURL(new Blob(['\ufeff' + text], { type: 'text/csv;charset=utf-8' }));
+      const a = document.createElement('a'); a.href = url; a.download = fname; document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 4000); toast('Downloaded ' + fname);
+    } catch (e){ copyFallback(text); }
+  }
+});
+async function copyFallback(text){
+  try { await navigator.clipboard.writeText(text); toast('Takeoff copied. Paste it into Excel.'); }
+  catch (e){ toast('Copy was blocked by this browser.'); }
+}
+(async () => {
+  try { if (window.claude && window.claude.use){ state.dl = await window.claude.use('downloads'); } } catch (e){ state.dl = null; }
+
+})();
+
+loadSample('sample-external-works.pdf');
+})();
+</script>
+
+</body>
+</html>
