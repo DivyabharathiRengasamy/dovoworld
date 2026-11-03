@@ -381,3 +381,17 @@ main section:not(.dark-band):not(.page-hero):not(.cta-band):not(.hero) .eyebrow:
 .card .tag{ color:#3F7A00; }
 .dark-band .card .tag{ color:#3F7A00; }
 .card .num{ opacity:1; color:var(--graphite); }
+
+/* SEO automation post: quick answer, author, h3, tables, figure */
+.article .post-author{ font-size:14px; color: var(--graphite); margin:-16px 0 20px; }
+.article .quick-answer{ background: var(--lime-soft); border-left:4px solid var(--lime-dim); padding:16px 20px; margin:0 0 24px; }
+.article .quick-answer p{ margin:0; color: var(--ink); }
+.article h3{ font-size: clamp(18px,2.4vw,21px); margin:28px 0 8px; }
+.article a{ color: var(--ink); text-decoration: underline; text-decoration-color: var(--lime-dim); text-underline-offset:3px; }
+.article .table-wrap{ overflow-x:auto; margin-top:18px; }
+.article table{ width:100%; border-collapse:collapse; font-size:15px; min-width:560px; }
+.article th, .article td{ text-align:left; vertical-align:top; padding:10px 12px; border-bottom:1px solid var(--line); color: var(--graphite); line-height:1.55; }
+.article th{ font-family: var(--display); color: var(--ink); background: var(--paper); }
+.article .post-figure{ margin:24px 0 8px; background: var(--paper); border:1px solid var(--line); padding:12px; }
+.article .post-figure svg{ width:100%; height:auto; display:block; }
+.article .post-figure figcaption{ font-size:14px; color: var(--graphite); margin-top:8px; }
